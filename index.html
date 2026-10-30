@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#101820" />
+    <meta name="description" content="A Day at Chula — a 3D student-life simulation." />
+    <title>A Day at Chula — Vietnamese Student Life</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+  </head>
+  <body>
+    <div id="game">
+      <div id="loading" class="overlay">
+        <div class="panel intro-panel">
+          <div class="eyebrow">CHULALONGKORN UNIVERSITY · BANGKOK</div>
+          <h1> A DAY <span>AT CHULA</span></h1>
+          <p class="subtitle">Một ngày của nghiên cứu sinh Việt Nam tại Central Library</p>
+          <div class="loader"></div>
+          <p id="loading-text" class="muted">Đang khởi tạo thế giới 3D và Python game engine…</p>
+        </div>
+      </div>
+
+      <div id="intro" class="overlay hidden">
+        <div class="panel intro-panel">
+          <div class="eyebrow">MAHATHIRARACHANUSORN BUILDING · CENTRAL LIBRARY</div>
+          <h1>A DAY <span>AT CHULA</span></h1>
+          <p class="subtitle">Một ngày bình thường. Một luận án chưa xong. Một Bangkok không bao giờ đứng yên.</p>
+          <p class="intro-copy">
+            Bạn là một nghiên cứu sinh Việt Nam ở Bangkok. Hôm nay, bạn cần check-in thư viện,
+            tìm tài liệu về PM₂.₅, xử lý dữ liệu, gặp bạn và hoàn thành một phần manuscript.
+          </p>
+          <div class="control-grid">
+            <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>Di chuyển</span></div>
+            <div><kbd>MOUSE</kbd><span>Quan sát</span></div>
+            <div><kbd>E</kbd><span>Tương tác</span></div>
+            <div><kbd>F</kbd><span>Thang máy</span></div>
+            <div><kbd>SHIFT</kbd><span>Đi nhanh</span></div>
+            <div><kbd>ESC</kbd><span>Tạm dừng</span></div>
+          </div>
+          <button id="start-button" class="primary-button">BẮT ĐẦU NGÀY MỚI <span>→</span></button>
+          <p class="tiny muted">Bản prototype 3D · Desktop: WASD + chuột · Mobile: dùng cụm phím trên màn hình</p>
+        </div>
+      </div>
+
+      <div id="pause" class="overlay hidden">
+        <div class="panel pause-panel">
+          <div class="eyebrow">DAY PAUSED</div>
+          <h2>Take a breath.</h2>
+          <p class="muted">Bangkok vẫn ở đó. Deadline cũng vậy.</p>
+          <button id="resume-button" class="primary-button">TIẾP TỤC <span>→</span></button>
+        </div>
+      </div>
+
+      <div id="dialogue" class="dialogue hidden">
+        <div class="dialogue-top"><span id="dialogue-speaker">MAI · VIETNAMESE PHD STUDENT</span><button id="dialogue-close" aria-label="Close">×</button></div>
+        <p id="dialogue-text"></p>
+        <button id="dialogue-next" class="dialogue-button">Tiếp tục</button>
+      </div>
+
+      <div id="floor-panel" class="floor-panel hidden">
+        <div class="floor-panel-head">
+          <div><span class="eyebrow">ELEVATOR</span><h3>Chọn tầng</h3></div>
+          <button id="floor-close" aria-label="Close">×</button>
+        </div>
+        <div id="floor-buttons" class="floor-buttons"></div>
+        <p class="tiny muted">Nhấn số tầng hoặc chọn trực tiếp.</p>
+      </div>
+
+      <div id="hud" class="hud hidden">
+        <div class="hud-top">
+          <div class="brand-mark"><span class="brand-dot"></span><div><b>A DAY AT CHULA</b><small>CENTRAL LIBRARY · BANGKOK</small></div></div>
+          <div class="time-card"><small>THURSDAY · CAMPUS LIFE</small><b id="clock">08:00</b><span id="floor-name">1F · LEARNING COMMONS</span></div>
+        </div>
+        <div class="hud-bottom">
+          <div class="mission-card">
+            <div class="mission-heading"><span class="eyebrow">TODAY'S PLAN</span><span id="mission-count">0 / 6</span></div>
+            <h3 id="objective">Check in at the library</h3>
+            <div id="task-list" class="task-list"></div>
+          </div>
+          <div class="status-card">
+            <div class="status-title"><span class="eyebrow">YOUR CONDITION</span><span id="money">฿500</span></div>
+            <div class="stat-row"><span>Energy</span><div class="stat-track"><i id="energy-bar"></i></div><b id="energy-value">92</b></div>
+            <div class="stat-row"><span>Hunger</span><div class="stat-track"><i id="hunger-bar"></i></div><b id="hunger-value">35</b></div>
+            <div class="stat-row"><span>Stress</span><div class="stat-track"><i id="stress-bar"></i></div><b id="stress-value">18</b></div>
+            <div class="stat-row"><span>Research</span><div class="stat-track"><i id="research-bar"></i></div><b id="research-value">0</b></div>
+          </div>
+        </div>
+        <div id="interaction-prompt" class="interaction-prompt hidden"><kbd>E</kbd><span id="interaction-label">Interact</span></div>
+        <div class="crosshair"><i></i><b></b></div>
+        <div id="toast" class="toast hidden"></div>
+      </div>
+
+      <div id="mobile-controls" class="mobile-controls hidden">
+        <div class="move-pad">
+          <button data-key="w" class="move-up">▲</button>
+          <button data-key="a" class="move-left">◀</button>
+          <button data-key="s" class="move-down">▼</button>
+          <button data-key="d" class="move-right">▶</button>
+        </div>
+        <div class="action-pad">
+          <button id="mobile-e" class="action-key">E<br><small>USE</small></button>
+          <button id="mobile-f" class="action-key secondary-key">F<br><small>LIFT</small></button>
+        </div>
+      </div>
+
+      <div id="end-screen" class="overlay hidden">
+        <div class="panel intro-panel">
+          <div class="eyebrow">END OF DAY · BANGKOK</div>
+          <h1>DAY <span>COMPLETE</span></h1>
+          <h2 id="day-summary">You made progress today.</h2>
+          <p id="day-detail" class="intro-copy"></p>
+          <button id="restart-button" class="primary-button">CHƠI LẠI <span>↻</span></button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
