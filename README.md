@@ -1,82 +1,89 @@
-# A Day at Chula — 3D Student-Life Game
+# A Day at Chula — v0.2 Architecture Upgrade
 
-A browser-based 3D prototype set in a stylised reconstruction of Chulalongkorn University's Office of Academic Resources (Central Library).
+3D browser game portraying daily life for a Vietnamese graduate student at Chulalongkorn University's **Office of Academic Resources / Central Library**.
 
-## What is included
+## v0.2 changes
 
-- First-person 3D exploration across seven floors.
-- Interactive reception, coffee corner, printer, book collection, study desk, NPC, group-study area and elevator.
-- A day plan with six tasks and student-life stats (energy, hunger, stress, research, social connection, money).
-- **Python game logic** in `public/game_logic.py`, executed in the browser by Pyodide.
-- Three.js handles 3D rendering, camera, controls and interaction targeting.
-- Vite build, ready for Vercel deployment.
+- Reconstructed **recognisable white exterior** from Chulalongkorn University's official photo: multi-wing facade, tall vertical slats, raised glazed entrance, broad staircase, **green railings**, trees and plaza.
+- **Python-generated GLB model**: `public/models/chula_exterior_v02.glb` (optimized web model, 11 draw groups, about 212 KB) loaded using Three.js `GLTFLoader`. The model was generated with `tools/build_exterior.py` using `trimesh`, and the independent `chula_exterior_editable_v02.glb` retains 434 individually named components for Blender. The procedural JavaScript facade is retained only as a fallback if GLB loading fails.
+- Begin the game **outside** the building. Climb the stairs, cross the entrance, check in at the reception and explore.
+- More detailed 1F learning commons (library service, self-check kiosks, student computing, print/scan), 2F co-working/group rooms, 4–6F study/collections; 3F illustrative digital learning area.
+- Working desk/kiosk collisions; no walking through furniture and perimeter walls. Functional lift menu `F` can return you to the exterior (`OUT`).
+- Python gameplay logic remains in `public/game_logic.py`, executed client-side with **Pyodide**; 3D world is rendered with **Three.js**.
+- Six core student-life missions, game time, budget, energy, hunger, stress, research progress, dialogue and NPC interaction.
 
-## Important fidelity note
+> **Accuracy disclosure:** Landmark details are based on public photos and library service information. The building footprint, proportions, stairs and floor plans are reconstructed approximately, not copied from an official measured model. Please read [REFERENCE_NOTES.md](REFERENCE_NOTES.md) for the evidence and outstanding inaccuracies.
 
-This is a playable **stylised blockout**, not an architecturally surveyed replica or a photogrammetry scan. It uses publicly documented library functions and floor information as a design basis. The exact room geometry, dimensions, furniture positions and architectural details should be refined against the official 360° tour / Chula Library Metaverse and additional reference photos.
+## Deploy to Vercel
 
-The official library information page describes the 1st-floor circulation/computer/printing/coffee/learning services, 2nd-floor group-study rooms, 3rd-floor AV/meeting functions, and floors 4–6 collections. The library is described by Chula as occupying seven floors.
+1. Upload all files (including `public` and `src`) to the **root** of your GitHub repository (not the ZIP archive).
+2. On Vercel import the GitHub repository, choose **Vite** and use:
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+   - Install Command: `npm install`
+3. Deploy; Vercel serves a static site. No Python backend needed because Pyodide runs Python code in the browser.
+4. A network connection is required for first load because Pyodide is fetched from jsDelivr.
 
 ## Run locally
 
-Requirements: Node.js 18+.
+Node.js 18+:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open the local URL shown by Vite.
+Open the local URL given by Vite. To verify production build run `npm run build`.
 
-To create a production build:
+To **regenerate the GLB from Python** (not necessary for deployment):
 
 ```bash
-npm run build
-npm run preview
+python -m pip install -r requirements-assets.txt
+python tools/build_exterior.py
+python test_game_logic.py
 ```
 
-## Deploy to Vercel
-
-1. Create a GitHub repository and upload the contents of this folder.
-2. In Vercel, choose **Add New → Project** and import the repository.
-3. Vercel should detect Vite. Confirm:
-   - Framework: `Vite`
-   - Build command: `npm run build`
-   - Output directory: `dist`
-4. Click **Deploy**.
-
-The game is a static browser app. No Python server is required: Pyodide loads and runs `game_logic.py` in the browser.
+Upload the updated `public/models/chula_exterior_v02.glb` on GitHub after regeneration. Vercel deploys the pre-generated GLB as a static asset. Python is not invoked during the build.
 
 ## Controls
 
-- Desktop: `W A S D` move, mouse look, `E` interact, `F` elevator, `Shift` walk faster, `Esc` pause.
-- Mobile: on-screen directional pad, E/F buttons; drag the screen to look around.
+- `W/A/S/D`: walk; mouse to look; `Shift`: walk faster.
+- `E`: interact when a nearby target is highlighted.
+- `F`: lift / floor selection; `OUT`: return to building exterior.
+- `Esc`: pause; press Resume to continue.
+- On a touch-screen: directional pad, E/F, drag to rotate camera.
 
-## Project structure
+## Structure
 
 ```text
 chula-life-game/
 ├── index.html
 ├── package.json
 ├── vercel.json
-├── src/
-│   ├── main.js
-│   └── style.css
-└── public/
-    └── game_logic.py
+├── README.md
+├── REFERENCE_NOTES.md
+├── requirements-assets.txt
+├── test_game_logic.py
+├── tools/
+│   └── build_exterior.py        # Python / trimesh 3D mesh generator
+├── public/
+│   ├── game_logic.py            # Python / Pyodide gameplay
+│   └── models/
+│       ├── chula_exterior_v02.glb           # Optimized runtime asset
+│       └── chula_exterior_editable_v02.glb  # Detailed editable Blender model
+└── src/
+    ├── main.js                  # Three.js game client + GLTFLoader
+    └── style.css                # UI
 ```
 
-## Reference sources
+## Future high-fidelity options
 
-- Chula Library Services / floor directory: https://www.arts.chula.ac.th/libsci/student-life/library-services/
-- Office of Academic Resources 360° video and Chula Library Metaverse: https://www.car.chula.ac.th/vdo.php
-- Chulalongkorn University article describing the seven-floor Central Library: https://sustainability.chula.ac.th/report/187/
-- Official Central Library website: https://www.car.chula.ac.th/
+To reach surveyed architectural accuracy, import Blender `.glb` assets made from measured plans / permitted photographs and add mesh-based collisions and navmesh pathing. Current version deliberately has **no inaccessible proprietary model dependencies**; it uses original, editable procedurally generated geometry.
 
-## Next production upgrades
+## Updating an existing GitHub + Vercel deployment
 
-1. Replace blockout geometry with a measured floor plan / detailed 3D model.
-2. Add more accurate facade, staircases, elevators, lighting and room proportions.
-3. Add animated NPCs, Thai/Vietnamese/English dialogue, sound and ambient audio.
-4. Add save/load, multiple days, class schedules, budgeting and branching story missions.
-5. Optimise mobile rendering and add accessibility settings.
+In your `chula-life-3d` GitHub repository, replace the older root files with the new files **keeping exactly the paths above** (especially `src/main.js`, `public/game_logic.py` and `public/models/chula_exterior_v02.glb`). Commit. Existing Vercel-GitHub integration normally builds and deploys the new commit automatically. Do **not** upload the ZIP as a single file. Check that the root `package.json` and `index.html` are still in the repository root.
+
+## Testing disclosures
+
+Verified in this environment: Python gameplay smoke test, syntax of `main.js`, generated GLB was read back successfully with `trimesh` (11 runtime groups; 434 editable component meshes). A full Vite build/browser rendering test could not be performed here because this offline container does not have cached npm dependencies.

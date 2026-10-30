@@ -7,11 +7,11 @@ import json
 FLOOR_NAMES = {
     1: "LEARNING COMMONS",
     2: "GROUP STUDY",
-    3: "MULTIMEDIA & MEETING",
-    4: "HUMANITIES & SCIENCE",
-    5: "SOCIAL SCIENCES",
-    6: "ASEAN & RARE COLLECTIONS",
-    7: "MEETING & EXHIBITION",
+    3: "DIGITAL LEARNING (ILLUSTRATIVE)",
+    4: "COLLECTIONS & QUIET STUDY",
+    5: "COLLECTIONS & READING",
+    6: "UPPER COLLECTIONS",
+    7: "NON-PUBLIC FLOOR",
 }
 
 TASKS = [
@@ -109,8 +109,8 @@ class StudentLife:
 
     def go_to_floor(self, floor):
         floor = int(floor)
-        if floor < 1 or floor > 7:
-            return self._message("That floor is not available.")
+        if floor < 1 or floor > 6:
+            return self._message("Only public-access floors 1–6 can be explored in this prototype.")
         self.floor = floor
         return self._message(f"You arrive at Floor {floor}: {FLOOR_NAMES[floor]}.")
 

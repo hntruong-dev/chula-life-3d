@@ -1,7 +1,7 @@
 {
   "name": "a-day-at-chula",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -13,5 +13,6 @@
   },
   "devDependencies": {
     "vite": "^6.0.0"
-  }
+  },
+  "description": "Vietnamese student-life 3D simulator with Python gameplay and Python-generated Chula Central Library exterior"
 }
